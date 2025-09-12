@@ -33,13 +33,19 @@ RMap(Region,Region5) map of 15 and state regions /NQ.QLD,CQ.QLD,SQ.QLD,GG.QLD,NN
 AllowGen(Region) allowable gernation regions
 AllowFuelMap(FuelGenTech,Region) allowable fuels by region
 AllowFuelMap5(FuelGenTech,Region5) allowable fuels by region
-TxAllowedSet(Region,RegionD) Prevents model considering expansion of non-viable transmission pathways
+*TxAllowedSet(Region,RegionD) Prevents model considering expansion of non-viable transmission pathways
+TxAllowedSet(Region,Region) Prevents model considering expansion of non-viable transmission pathways
+*tsb
 VREAllowedSet(VREGenTech,Region) Prevents model considering expansion of VRE capacity where no resource exists
 StoAllowedSet(Region,ElecStoTech) Prevents model from building storage (particularly PHES) where it is not plausible
 S scenarios /NOAKStageTech,CCS,Nuclear,OffshoreWind/
+NOAKSet(S) subset of S /NOAKStageTech/
+*tsb
 cslist cost stack list /VRECapitalCost,PeakingCapitalCost,BLFossilCapitalCost,NuclearCapitalCost,StorageCost,OandMCost,IBRCost,ConnectCost,FuelCost,CCSCost,REZTranCost,OtherTranCost/
 ;
 alias (y,Year);
+alias (Region, Region_al, Region_al2);
+*tsb
 
 *Load data ____________________________________________________________________________________________________________________________________
 *Loaded scalars
@@ -65,9 +71,13 @@ ElecConvCapCost(GenTech) electricity conversion technology capital cost dollars 
 RegGenCostFactor(Region,GenTech) regional cost factor for generation technologies
 ElecStoCapCost(ElecStoTech) electricity storage capacity cost in dollars per MWh
 RegStoCostFactor(Region,ElecStoTech) regional cost factor for storage technologies
-TxCapCost(Region,RegionD) transmission capacity cost in dollars per MW
+*TxCapCost(Region,RegionD) transmission capacity cost in dollars per MW
+TxCapCost(Region,Region_al) transmission capacity cost in dollars per MW
+*tsb
 REZTxCost(Region) REZ average transmission cost applicable to VRE capacity dollars per MW
-TxCapExisting(Region,RegionD) existing transmission capacity MW
+*TxCapExisting(Region,RegionD) existing transmission capacity MW
+TxCapExisting(Region,Region_al) existing transmission capacity MW
+*tsb
 Duration_Hrs(ElecStoTech) nameplate duration associated with each electricity storage technology
 ElecConvEconomicLife_Yrs(GenTech) electricity conversion capacity cost amortisation period
 ElecStoEconomicLife_Yrs(ElecStoTech) electricity storage capacity cost amortisation period
@@ -256,7 +266,11 @@ FOAKProjCap_Scenario('OffshoreWind','USCBlackCCS',Region)=0;
 FOAKProjCap_Scenario('OffshoreWind','CCGTgasCCS',Region)=0;
 
 *Assign sets defined by loaded Parameters
-TxAllowedSet(Region,RegionD)=yes$TxCapCost(Region,RegionD);
+TxCapCost("SNW","CNSW")=TxCapCost("CNSW","SNW");
+TxCapCost("MEL","WNV")=TxCapCost("WNV","MEL");
+TxAllowedSet(Region, Region_al)=yes$(TxCapCost(Region, Region_al)>1);
+*tsb
+*TxAllowedSet(Region,RegionD)=yes$TxCapCost(Region,RegionD);
 StoAllowedSet(Region,ElecStoTech)=yes$RegStoCostFactor(Region,ElecStoTech);
 AllowFuelMap(FuelGenTech,Region)=yes$FuelAllowed_int(FuelGenTech,Region);
 
@@ -266,13 +280,16 @@ ElecConvCap(GenTech,Region) electricity conversion technology capacity (MW)
 ElecStoCap(ElecStoTech,Region) electricity storage capacity (MWh)
 TxCap(Region,Region) new transmission capacity (MW)
 ElecEnergyProd(GenTech,Region,h) hourly energy production (MW)
-ElecRegionExport(Region,RegionD,h) total exported energy including storage discharge (GenTech in MW)
+*ElecRegionExport(Region,RegionD,h) total exported energy including storage discharge (GenTech in MW)      tsb
+ElecRegionExport(Region,Region_al,h) total exported energy including storage discharge (GenTech in MW)
 ElecStateofCharge(ElecStoTech,Region,h) electricity storage state of charge (MWh)
 ElecDischar(ElecStoTech,Region,h) electricity storage discharge (MW)
 ElecChar(ElecStoTech,Region,h) electricity storage charge (MW)
 HydroStateofCharge(Region,h) hydro state of charge (MWh)
 HydroDischar(Region,h) hydro discharge (MW)
 ;
+
+
 
 Variable
 TotalCost all costs of meeting demand for electricity in Australian dollars
@@ -281,7 +298,9 @@ TotalCost all costs of meeting demand for electricity in Australian dollars
 Equations
 Obj objective function
 ConElecExportLimit(Region,h) Maximum regional exports and regional energy supply-demand balance constraint
-ConElecDemandSupplyBalance(RegionD,h) Total demand-supply balance
+*ConElecDemandSupplyBalance(RegionD,h) Total demand-supply balance
+ConElecDemandSupplyBalance(Region,h) Total demand-supply balance
+*tsb
 ConVREGenDefinition(VREGenTech,Region,h) Variable electricity generation defined
 ConMaxFuelElecProd(FuelGenTech,Region,h) Maximum instantaneous electricity production
 ConMinFuelElecProd(FuelGenTech,Region,h) Minimum instantaneous electricity production
@@ -293,11 +312,16 @@ ConMaxElecDischarPower(ElecStoTech,Region,h) Maximum discharge constraint on pow
 ConMaxElecCharPower(ElecStoTech,Region,h) Charge cannot exceed power capacity of storage
 ConMaxPHES159 Disallowing any additional 159 hour duration projects besides Snowy2.0
 ConHydroStateOfChargeBalance(Region,h) State of charge balance hydro
+ConStoNetSOC(ElecStoTech,Region) Storage round trip state of charge is constant
+*tsb
 ConHydroInitSoC(Region) hydro iniital state of charge
 ConMaxHydroDischarSoC(Region,h) Maximum discharge constraint on state of charge hydro
 ConMaxHydroDischarPower(Region,h) Maximum discharge constraint on power rating hydro
-ConMaxElecTx(Region,RegionD,h) Maximum transmission constraint
-ConTxSymmetry(Region,RegionD) New transmission symmetry
+ConMaxElecTx(Region, Region_al,h) Maximum transmission constraint
+ConTxSymmetry(Region, Region_al) New transmission symmetry
+*tsb
+*ConMaxElecTx(Region,RegionD,h) Maximum transmission constraint
+*ConTxSymmetry(Region,RegionD) New transmission symmetry
 ConMaxRen(VREGenTech,Region) Maximum renewable deployment constraint
 ConMaxEmisIntensity Maximum average emission intensity of annual electricity generation
 ConReserveMargin(Region5) Reserve margin constraint Option 2
@@ -311,13 +335,20 @@ Sum((FuelGenTech,Region), FuelConnectCost(FuelGenTech) * ElecConvCap(FuelGenTech
 sum((GenTech,Region,h),ElecConvVariableOM(GenTech) * ElecEnergyProd(GenTech,Region,h) * dt) + sum((GenTech,Region),ElecConvFixedOM(GenTech) * ElecConvCap(GenTech,Region) ) +
 sum((CCSGenTech,Region,h),CarbStoCost(CCSGenTech) * ElecEnergyProd(CCSGenTech,Region,h) * dt)+
 sum((VREGenTech,Region),REZTxCost(Region) * ElecConvCap(VREGenTech,Region) * TxCapCostConversion)+
-sum((ElecStoTech,Region),ElecStoFixedOM(ElecStoTech) / Duration_Hrs(ElecStoTech) * ElecStoCap(ElecStoTech,Region)) +
-Sum((Region,RegionD),TxCap(Region,RegionD) * TxCapCost(Region,RegionD) * TxCapCostConversion) +
+sum((ElecStoTech,Region),ElecStoFixedOM(ElecStoTech) / Duration_Hrs(ElecStoTech) * (ElecStoCap(ElecStoTech,Region) + 0*ElecStoCapExisting(ElecStoTech,Region))) +
+*tsb
+*sum((ElecStoTech,Region),ElecStoFixedOM(ElecStoTech) / Duration_Hrs(ElecStoTech) * ElecStoCap(ElecStoTech,Region)) +
+Sum((Region, Region_al),TxCap(Region, Region_al) * TxCapCost(Region, Region_al) * TxCapCostConversion) +
+*Sum((Region,RegionD),TxCap(Region,RegionD) * TxCapCost(Region,RegionD) * TxCapCostConversion) +
 Sum((GenTech,Region), FOAKProjCap(GenTech,Region) * FOAKProjCapCost(GenTech,Region) * ElecConvCapCostConversion(GenTech)) + sum((GenTech,Region),FOAKProjCap(GenTech,Region) * ElecConvFixedOM(GenTech));
 
-ConElecExportLimit(Region,h).. Sum(RegionD,ElecRegionExport(Region,RegionD,h)) =l= sum(GenTech,ElecEnergyProd(GenTech,Region,h)) + HydroDischar(Region,h) + sum(ElecStoTech,ElecDischar(ElecStoTech,Region,h)) - sum(ElecStoTech, ElecChar(ElecStoTech,Region,h) );
+*ConElecExportLimit(Region,h).. Sum(RegionD,ElecRegionExport(Region,RegionD,h)) =l= sum(GenTech,ElecEnergyProd(GenTech,Region,h)) + HydroDischar(Region,h) + sum(ElecStoTech,ElecDischar(ElecStoTech,Region,h)) - sum(ElecStoTech, ElecChar(ElecStoTech,Region,h) );
+ConElecExportLimit(Region,h).. Sum(Region_al,ElecRegionExport(Region, Region_al,h))                   +  ElecDemand(Region,h)/(1-ElecTxLossFactor)
+                                         =l= sum(  Region_al2,ElecRegionExport( Region_al2,Region,h )  ) * (1-ElecTxLossFactor) + sum( GenTech,ElecEnergyProd(GenTech,Region,h) )+
+                                                 HydroDischar(Region,h) + sum(ElecStoTech,ElecDischar(ElecStoTech,Region,h)) - sum(ElecStoTech, ElecChar(ElecStoTech,Region,h) );
 
-ConElecDemandSupplyBalance(RegionD,h).. Sum(Region,ElecRegionExport(Region,RegionD,h) * (1-ElecTxLossFactor)) =g= ElecDemand(RegionD,h);
+*ConElecDemandSupplyBalance(RegionD,h).. Sum(Region,ElecRegionExport(Region,RegionD,h) * (1-ElecTxLossFactor)) =g= ElecDemand(RegionD,h);
+ConElecDemandSupplyBalance(Region,h).. ElecRegionExport(Region, Region,h) =e= 0;
 
 ConVREGenDefinition(VREGenTech,Region,h).. ElecEnergyProd(VREGenTech,Region,h) =e= VREprofile(VREGenTech,Region,h) * (ElecConvCap(VREGenTech,Region) + ElecConvCapExisting(VREGenTech,Region));
 
@@ -327,11 +358,14 @@ ConMinFuelElecProd(FuelGenTech,Region,h).. (ElecConvCap(FuelGenTech,Region) + El
 
 ConMaxAnnFuelElecProd(FuelGenTech,Region).. Sum(h,ElecEnergyProd(FuelGenTech,Region,h) * dt) =l= MaxAvailability(FuelGenTech) * (ElecConvCap(FuelGenTech,Region) + ElecConvCapExisting(FuelGenTech,Region)) * 8760;
 
-ConElecStateOfChargeBalance(ElecStoTech,Region,h).. ElecStateofCharge(ElecStoTech,Region,h+1) =e= ElecStateofCharge(ElecStoTech,Region,h)+ ElecStoEfficiency(ElecStoTech)**(1/2) * ElecChar(ElecStoTech,Region,h) * dt - ElecStoEfficiency(ElecStoTech)**(-1/2) * ElecDischar(ElecStoTech,Region,h) * dt; 
+ConElecStateOfChargeBalance(ElecStoTech,Region,h).. ElecStateofCharge(ElecStoTech,Region,h+1) =e= ElecStateofCharge(ElecStoTech,Region,h)+ ElecStoEfficiency(ElecStoTech)**(1/2) * ElecChar(ElecStoTech,Region,h) * dt - ElecStoEfficiency(ElecStoTech)**(-1/2) * ElecDischar(ElecStoTech,Region,h) * dt;
+
+ConStoNetSOC(ElecStoTech,Region)..     ElecStateofCharge(ElecStoTech,Region,'84') + 0*ElecStoEfficiency(ElecStoTech)**(1/2) * ElecChar(ElecStoTech,Region,'84') * dt - 0*ElecStoEfficiency(ElecStoTech)**(-1/2) * ElecDischar(ElecStoTech,Region,'84') * dt=g= ElecStateofCharge(ElecStoTech,Region,'1');
+*tsb
 
 ConMaxElecStateOfCharge(ElecStoTech,Region,h).. ElecStateofCharge(ElecStoTech,Region,h) =l= ElecStoCap(ElecStoTech,Region)$StoAllowedSet(Region,ElecStoTech) + ElecStoCapExisting(ElecStoTech,Region);
 
-ConMaxElecDischarSoC(ElecStoTech,Region,h).. ElecDischar(ElecStoTech,Region,h) =l= ElecStateofCharge(ElecStoTech,Region,h) / dt; 
+ConMaxElecDischarSoC(ElecStoTech,Region,h).. ElecDischar(ElecStoTech,Region,h) =l= ElecStateofCharge(ElecStoTech,Region,h) / dt;
 
 ConMaxElecDischarPower(ElecStoTech,Region,h).. ElecDischar(ElecStoTech,Region,h) =l= ElecStoCap(ElecStoTech,Region)$StoAllowedSet(Region,ElecStoTech) / Duration_Hrs(ElecStoTech) + ElecStoCapExisting(ElecStoTech,Region) / Duration_Hrs(ElecStoTech) ;
 
@@ -341,16 +375,20 @@ ConMaxPHES159.. ElecStoCap('HydPump159','SNSW') =e=0;
 
 ConHydroInitSoC(Region).. HydroStateofCharge(Region,'1') =e= HydroChar(Region,'1') * dt;
 
-ConHydroStateOfChargeBalance(Region,h).. HydroStateofCharge(Region,h+1) =l= HydroStateofCharge(Region,h) + HydroChar(Region,h) * dt - HydroDischar(Region,h) * dt; 
+ConHydroStateOfChargeBalance(Region,h).. HydroStateofCharge(Region,h+1) =l= HydroStateofCharge(Region,h) + HydroChar(Region,h) * dt - HydroDischar(Region,h) * dt;
 
-ConMaxHydroDischarSoC(Region,h).. HydroDischar(Region,h) =l= HydroStateofCharge(Region,h) / dt; 
+ConMaxHydroDischarSoC(Region,h).. HydroDischar(Region,h) =l= HydroStateofCharge(Region,h) / dt;
 
 ConMaxHydroDischarPower(Region,h).. HydroDischar(Region,h) =l= HydroCap(Region);
 
-ConMaxElecTx(Region,RegionD,h).. ElecRegionExport(Region,RegionD,h) =l= TxCap(Region,RegionD)$TxAllowedSet(Region,RegionD) + TxCapExisting(Region,RegionD);
+*ConMaxElecTx(Region,RegionD,h).. ElecRegionExport(Region,RegionD,h) =l= TxCap(Region,RegionD)$TxAllowedSet(Region,RegionD) + TxCapExisting(Region,RegionD);
 
-ConTxSymmetry(Region,RegionD).. TxCap(Region,RegionD) =e= TxCap(RegionD,Region);
+*ConTxSymmetry(Region,RegionD).. TxCap(Region,RegionD) =e= TxCap(RegionD,Region);
 
+ConMaxElecTx(Region, Region_al,h).. ElecRegionExport(Region, Region_al,h)*(1-ElecTxLossFactor) =l= TxCap(Region, Region_al)$TxAllowedSet(Region, Region_al) + TxCapExisting(Region, Region_al);
+
+ConTxSymmetry(Region, Region_al).. TxCap(Region, Region_al) =e= TxCap(Region_al,Region);
+*tsb
 ConMaxRen(VREGenTech,Region).. ElecConvCap(VREGenTech,Region) =l= RenCapMax(VREGenTech,Region);
 
 ConMaxEmisIntensity.. Sum((FossilGenTech,Region,h),ElecEnergyProd(FossilGenTech,Region,h) * dt * (1-CaptureRate(FossilGenTech)) * FuelEmissionFactor(FossilGenTech,Region) * GJperMWh / FuelEfficiency(FossilGenTech) ) =l= EmissionIntensity * sum((RegionD,h),ElecDemand(RegionD,h) * dt / (1-ElecTxLossFactor));
@@ -358,7 +396,7 @@ ConMaxEmisIntensity.. Sum((FossilGenTech,Region,h),ElecEnergyProd(FossilGenTech,
 ConReserveMargin(Region5).. OperatingReserve(Region5) =l= sum(Region$RMap(Region,Region5),
 Sum(FuelGenTech,ElecConvCap(FuelGenTech,Region)+ElecConvCapExisting(FuelGenTech,Region)) + sum(VREGenTech,PeakContribution(VREGenTech,Region) * (ElecConvCap(VREGenTech,Region)+ElecConvCapExisting(VREGenTech,Region))) +
  HydroCap(Region) + sum(ElecStoTech,(ElecStoCap(ElecStoTech,Region)$StoAllowedSet(Region,ElecStoTech)+ElecStoCapExisting(ElecStoTech,Region))/Duration_Hrs(ElecStoTech))-PeakDemand(Region) );
- 
+
 
 
 Model SEM1 /
@@ -377,6 +415,8 @@ ConMaxElecCharPower,
 ConMaxPHES159,
 ConHydroInitSoC,
 ConHydroStateOfChargeBalance,
+ConStoNetSOC,
+*tsb
 ConMaxHydroDischarSoC,
 ConMaxHydroDischarPower,
 ConMaxElecTx,
@@ -399,7 +439,7 @@ Loop(h,
 HydroStateofCharge.l(Region,h+1)=HydroStateofCharge.l(Region,h)+HydroInflow('2011',Region,h);
 );
 *Loop through scenarios
-Loop(S,
+Loop(S$NOAKSet(S),
 FuelAllowed_int(FuelGenTech,Region)=FuelAllowed_Scenario(S,FuelGenTech,Region);
 RenCapMax(VREGenTech,Region)=RenCapMax_Scenario(S,VREGenTech,Region);
 FOAKProjCap(GenTech,Region)=FOAKProjCap_Scenario(S,GenTech,Region);
@@ -465,7 +505,8 @@ CostStack(S,'BLFossilCapitalCost')=(sum((BLFossilGenTech,Region),RElecConvCap(S,
 CostStack(S,'NuclearCapitalCost')=(sum((NuclearGenTech,Region),RElecConvCap(S,NuclearGenTech,Region) * ElecConvCapCost(NuclearGenTech) * RegGenCostFactor(Region,NuclearGenTech) * ElecConvCapCostConversion(NuclearGenTech) ) +
                                    Sum((NuclearGenTech,Region), FOAKProjCap_Scenario(S,NuclearGenTech,Region) * FOAKProjCapCost(NuclearGenTech,Region) * ElecConvCapCostConversion(NuclearGenTech)))/(sum((Region,h),ElecDemand(Region,h)) / (1-ElecTxLossFactor) * dt);
 CostStack(S,'StorageCost')=(sum((ElecStoTech,Region),RElecStoCap(S,ElecStoTech,Region) * (ElecStoCapCost(ElecStoTech) * RegStoCostFactor(Region,ElecStoTech) + (ElecStoConnectCost(ElecStoTech,Region)/Duration_Hrs(ElecStoTech))) * ElecStoCapCostConversion(ElecStoTech) )+
-                            sum((ElecStoTech,Region),ElecStoFixedOM(ElecStoTech) / Duration_Hrs(ElecStoTech) * RElecStoCap(S,ElecStoTech,Region)) )/(sum((Region,h),ElecDemand(Region,h)) / (1-ElecTxLossFactor) * dt);                            
+                            sum((ElecStoTech,Region),ElecStoFixedOM(ElecStoTech) / Duration_Hrs(ElecStoTech) * RElecStoCapAll(S,ElecStoTech,Region)) )/(sum((Region,h),ElecDemand(Region,h)) / (1-ElecTxLossFactor) * dt);
+*tsb ElecStoCapAll to ElecStoCap for fixed OM
 CostStack(S,'OandMCost')=(sum((GenTech,Region,h),ElecConvVariableOM(GenTech) * RElecEnergyProd(S,GenTech,Region,h) * dt) +
                           sum((GenTech,Region),ElecConvFixedOM(GenTech) * RElecConvCap(S,GenTech,Region)) + sum((GenTech,Region),FOAKProjCap_Scenario(S,GenTech,Region) * ElecConvFixedOM(GenTech)) )/(sum((Region,h),ElecDemand(Region,h)) / (1-ElecTxLossFactor) * dt);
 CostStack(S,'IBRCost')=sum((VREGenTech,Region),RElecConvCap(S,VREGenTech,Region) * IBRRemediationCost(VREGenTech) * ElecConvCapCostConversion(VREGenTech) )/(sum((Region,h),ElecDemand(Region,h)) / (1-ElecTxLossFactor) * dt);

@@ -134,6 +134,8 @@ ElecStoCapCostConversion(ElecStoTech) converts electricity storage capacity upfr
 PeakDemandW(w,Region) the highest demand by region experienced in that weather year across all hours
 ;
 
+$ontext
+
 $onEmbeddedCode Connect:
 - ExcelReader:
     file: Data\AllData.xlsx
@@ -146,23 +148,23 @@ $onEmbeddedCode Connect:
         range: LCF_GenTech!C6:E80
         rowDimension: 2
         columnDimension: 0
-      - name: ElecStoCapCost_int 
+      - name: ElecStoCapCost_int
         range: StoCapitalCost-GloNZEpost2050!C7:AI13
         rowDimension: 1
         columnDimension: 1
-      - name: RegStoCostFactor 
+      - name: RegStoCostFactor
         range: LCF_ElecStoTech!C6:E96
         rowDimension: 2
         columnDimension: 0
-      - name: TxCapCost_int 
+      - name: TxCapCost_int
         range: TxCost15Region!B6:AH30
         rowDimension: 2
         columnDimension: 1
-      - name: REZTxCost 
+      - name: REZTxCost
         range: REZTxCost!C6:D20
         rowDimension: 1
         columnDimension: 0
-      - name: TxCapExisting 
+      - name: TxCapExisting
         range: TranCap15Region!B6:D37
         rowDimension: 2
         columnDimension: 0
@@ -174,7 +176,7 @@ $onEmbeddedCode Connect:
         range: GenTechParams!C7:D19
         rowDimension: 1
         columnDimension: 0
-      - name: ElecStoEconomicLife_Yrs 
+      - name: ElecStoEconomicLife_Yrs
         range: ElecStoTechParams!D7:F13
         rowDimension: 1
         columnDimension: 0
@@ -183,16 +185,16 @@ $onEmbeddedCode Connect:
         range: GenTechParams!C7:E19
         rowDimension: 1
         columnDimension: 0
-        ignoreColumns: D      
+        ignoreColumns: D
       - name: ElecStoConstructPeriod_Yrs
         range: ElecStoTechParams!D7:G13
         rowDimension: 1
         columnDimension: 0
         ignoreColumns: "E:F"
-      - name: FuelPrice_int 
+      - name: FuelPrice_int
         range: FuelCost_average!C6:AD19
         rowDimension: 1
-        columnDimension: 1   
+        columnDimension: 1
         ignoreRows: [14:17]
       - name: FuelEfficiency
         range: GenTechParams!C7:F19
@@ -218,7 +220,7 @@ $onEmbeddedCode Connect:
         columnDimension: 0
         ignoreColumns: "D:K"
         ignoreRows: [9:10]
-      - name: ElecConvVariableOM 
+      - name: ElecConvVariableOM
         range: GenTechParams!C7:H19
         rowDimension: 1
         columnDimension: 0
@@ -227,32 +229,32 @@ $onEmbeddedCode Connect:
         range: GenTechParams!C7:G19
         rowDimension: 1
         columnDimension: 0
-        ignoreColumns: "D:F"    
+        ignoreColumns: "D:F"
       - name: ElecStoFixedOM
         range: ElecStoTechParams!D7:H13
         rowDimension: 1
         columnDimension: 0
         ignoreColumns: "E:G"
-      - name: ElecConnectCostVRE_int 
+      - name: ElecConnectCostVRE_int
         range: ElecVREConCost!C7:D21
         rowDimension: 1
         columnDimension: 0
-      - name: ElecConnectCostNonVRE_int 
+      - name: ElecConnectCostNonVRE_int
         range: ElecNonVREConCost!C7:D11
         rowDimension: 1
         columnDimension: 0
-      - name: IBRRemediationCostVRE_int 
+      - name: IBRRemediationCostVRE_int
         range: IBRRemediationCost!C6:D36
         rowDimension: 1
         columnDimension: 0
-      - name: RenCapMax 
+      - name: RenCapMax
         range: REZCap15Region!B6:D65
         rowDimension: 2
         columnDimension: 0
-      - name: CFAdjust_int 
+      - name: CFAdjust_int
         range: CapFacAdjust_working!AO21:BC33
         rowDimension: 1
-        columnDimension: 1        
+        columnDimension: 1
       - name: ElecStoConnectCostBatt_int
         range: ElecStoConCost!C7:D11
         rowDimension: 1
@@ -267,14 +269,14 @@ $onEmbeddedCode Connect:
         rowDimension: 1
         columnDimension: 0
         ignoreColumns: "D:I"
-        ignoreRows: [14:17]        
+        ignoreRows: [14:17]
       - name: MaxAvailability
         range: GenTechParams!C7:K19
         rowDimension: 1
         columnDimension: 0
         ignoreColumns: "D:J"
-        ignoreRows: [14:17]         
-      - name: OperatingReserve 
+        ignoreRows: [14:17]
+      - name: OperatingReserve
         range: OpReserve!C6:D10
         rowDimension: 1
         columnDimension: 0
@@ -282,25 +284,25 @@ $onEmbeddedCode Connect:
         range: PeakContribution!C6:E18
         rowDimension: 2
         columnDimension: 0
-      - name: FuelEmissionFactor5_int 
+      - name: FuelEmissionFactor5_int
         range: FuelCO2Eq!B6:D35
         rowDimension: 2
         columnDimension: 0
-      - name: ScalData 
+      - name: ScalData
         range: Scalarlist!B6:E12
         rowDimension: 1
         columnDimension: 0
-        ignoreColumns: "C:D"   
-      - name: FOAKProjCap 
+        ignoreColumns: "C:D"
+      - name: FOAKProjCap
         range: FOAKParams!B7:D13
         rowDimension: 2
         columnDimension: 0
-      - name: FOAKProjCapCost 
+      - name: FOAKProjCapCost
         range: FOAKParams!B7:E13
         rowDimension: 2
         columnDimension: 0
         ignoreColumns: D
-      - name: PHESProjCap 
+      - name: PHESProjCap
         range: PHESParams!B7:D8
         rowDimension: 2
         columnDimension: 0
@@ -339,10 +341,11 @@ $onEmbeddedCode Connect:
       - name: HydroInflowhhr
         range: Flows!V3:AC228387
         rowDimension: 2
-        columnDimension: 1        
+        columnDimension: 1
 - GAMSWriter:
     symbols: all
 $offEmbeddedCode
+$offtext
 
 
 *Load gdx data
