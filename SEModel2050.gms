@@ -1,4 +1,4 @@
-option solprint = off ;
+option solprint = on ;
 *Simple electricity model.
 *Version changes: date is 2050, add FOAK costs, add existing pumped hydro, additional REZ capacity from existing deployed recognised
 
